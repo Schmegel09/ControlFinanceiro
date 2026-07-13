@@ -55,14 +55,9 @@ function enviarEmail(string $para, string $assunto, string $mensagem): bool
                     'allow_self_signed' => true
                 )
             );
-            // Depuração: registrar saída do SMTP no error_log para diagnosticar falhas
-            $mail->SMTPDebug = 2; // ativado temporariamente para diagnosticar
-            $mail->Debugoutput = function($str, $level) use ($host, $port) {
-                $log = "PHPMailer debug ({$host}:{$port}) [level {$level}]: {$str}\n";
-                error_log($log);
-                // também gravar em arquivo temporário para fácil inspeção
-                @file_put_contents('/tmp/php_smtp_debug.txt', $log, FILE_APPEND);
-            };
+            // Depuração desativada em produção (alterar para 2 se necessário diagnosticar)
+            $mail->SMTPDebug = 0;
+            $mail->Debugoutput = 'echo';
 
             $mail->setFrom($from, $name);
             $mail->addAddress($para);

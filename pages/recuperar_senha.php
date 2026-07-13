@@ -65,8 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $assunto = 'Código de recuperação de senha';
                 $corpo = "Olá,\n\nSeu codigo de recuperacao de senha é:\n\n{$codigo}\n\nEste código expira em 15 minutos.\n\nSe você não solicitou a alteração, ignore esta mensagem.";
 
-                // Gravamos o corpo do email em arquivo temporário para depuração
-                @file_put_contents('/tmp/last_recovery_email.txt', date('Y-m-d H:i:s') . " - Para: {$email} - Codigo: {$codigo}\n" . $corpo . "\n----\n", FILE_APPEND);
+                // E-mail será enviado via enviarEmail()
 
                 if (enviarEmail($email, $assunto, $corpo)) {
                     $_SESSION['email_recuperacao'] = $email;
@@ -199,20 +198,26 @@ if ($email_session && !isset($_POST['acao'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar senha</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; }
-        .container { border: 1px solid #ddd; padding: 20px; border-radius: 5px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; }
-        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 3px; cursor: pointer; width: 100%; }
-        button:hover { background: #0056b3; }
-        .msg { padding: 10px; margin-bottom: 15px; border-radius: 3px; }
-        .erro { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .sucesso { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        a { color: #007bff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        .progress { background: #e9ecef; padding: 10px; border-radius: 3px; margin-bottom: 15px; font-size: 12px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 420px; width: 100%; }
+        h1 { color: #333; margin-bottom: 10px; font-size: 28px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px; transition: border-color 0.3s; }
+        input:focus { outline: none; border-color: #667eea; }
+        button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; font-size: 16px; transition: transform 0.2s, box-shadow 0.2s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
+        button:active { transform: translateY(0); }
+        .msg { padding: 14px; margin-bottom: 20px; border-radius: 6px; font-size: 14px; border-left: 4px solid; }
+        .erro { background: #fff5f5; color: #721c24; border-left-color: #f5c6cb; }
+        .sucesso { background: #f0f9f7; color: #155724; border-left-color: #c3e6cb; }
+        .info { background: #f0f7ff; color: #0c5460; border-left-color: #bee5eb; }
+        a { color: #667eea; text-decoration: none; font-weight: 500; transition: color 0.2s; }
+        a:hover { color: #764ba2; text-decoration: underline; }
+        .progress { background: #f0f0f0; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; color: #666; font-weight: 600; text-align: center; }
+        p { margin-top: 15px; text-align: center; font-size: 14px; color: #666; }
+        small { display: block; margin-top: 6px; color: #999; font-size: 12px; }
     </style>
 </head>
 <body>
