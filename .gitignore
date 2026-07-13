@@ -1,0 +1,11 @@
+vendor/
+.env
+/tmp/
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+/.phpunit.result.cache
+.env.local
+.env.*.local.env
+/vendor/
