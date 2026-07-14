@@ -77,7 +77,14 @@ CREATE TABLE `password_resets` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
-6. **Inicie o servidor**
+6. **Configuração no Hostinger**
+
+- Coloque todos os arquivos e pastas do projeto dentro da pasta `public_html` do seu domínio.
+- Garanta que `.htaccess` esteja no mesmo nível de `index.php`.
+- No Hostinger, configure o `.env` com as credenciais do banco de dados e SMTP para `controlefinanceiro.gmwebdigital.com`.
+- Se você estiver usando o gerenciador de arquivos do Hostinger, crie `.env` manualmente a partir de `.env.example`.
+
+7. **Inicie o servidor localmente**
 ```bash
 php -S localhost:8000
 ```
