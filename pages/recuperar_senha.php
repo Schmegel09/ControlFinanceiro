@@ -2,10 +2,17 @@
 
 declare(strict_types=1);
 
+/*
+Legenda (recuperar_senha.php):
+- Implementa fluxo de recuperação em 3 etapas (enviar código, validar, alterar senha).
+- Ação dos formulários aponta para `/recuperar-senha` e usa `acao` hidden para diferenciar etapas.
+- Mantém prepared statements para consultas; evite concatenar valores em SQL.
+*/
+
 session_start();
 
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: index.php?page=dashboard');
+    header('Location: /dashboard');
     exit;
 }
 
@@ -179,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($_SESSION['email_recuperacao']);
             unset($_SESSION['usuario_id_recuperacao']);
 
-            header('Location: index.php?page=login&reset=sucesso');
+            header('Location: /login?reset=sucesso');
             exit;
         }
     }
@@ -236,7 +243,7 @@ if ($email_session && !isset($_POST['acao'])) {
 
         <?php if ($etapa === 1): ?>
             <!-- ETAPA 1: Email -->
-            <form method="post" action="index.php?page=recuperar-senha">
+            <form method="post" action="/recuperar-senha">
                 <input type="hidden" name="acao" value="enviar_codigo">
                 <div class="form-group">
                     <label for="email">E-mail cadastrado</label>
@@ -247,7 +254,7 @@ if ($email_session && !isset($_POST['acao'])) {
 
         <?php elseif ($etapa === 2 && $usuario_id_session): ?>
             <!-- ETAPA 2: Validar Código -->
-            <form method="post" action="index.php?page=recuperar-senha">
+            <form method="post" action="/recuperar-senha">
                 <input type="hidden" name="acao" value="validar_codigo">
                 <div class="form-group">
                     <label for="codigo">Código de 6 dígitos</label>
@@ -257,12 +264,12 @@ if ($email_session && !isset($_POST['acao'])) {
                 <button type="submit">Validar código</button>
             </form>
             <p>
-                <a href="index.php?page=recuperar-senha">Usar outro e-mail</a>
+                <a href="/recuperar-senha">Usar outro e-mail</a>
             </p>
 
         <?php elseif ($etapa === 3 && $usuario_id_session): ?>
             <!-- ETAPA 3: Nova Senha -->
-            <form method="post" action="index.php?page=recuperar-senha">
+            <form method="post" action="/recuperar-senha">
                 <input type="hidden" name="acao" value="alterar_senha">
                 <div class="form-group">
                     <label for="senha">Nova senha</label>
@@ -278,7 +285,7 @@ if ($email_session && !isset($_POST['acao'])) {
         <?php endif; ?>
 
         <p>
-            <a href="index.php?page=login">Voltar ao login</a>
+            <a href="/login">Voltar ao login</a>
         </p>
     </div>
 </body>

@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+/*
+Legenda (404.php):
+- Página de erro exibida quando a rota requisitada não existe no `routes/web.php`.
+- Para personalizar, edite este arquivo e o layout HTML.
+*/
+
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +21,7 @@ declare(strict_types=1);
 
     <h1>404 - Página não encontrada</h1>
     <p>A página que você está procurando não existe.</p>
-    <p><a href="index.php?page=login">Voltar para o início</a></p>
+    <p><a href="/login">Voltar para o início</a></p>
 
 </body>
 </html>

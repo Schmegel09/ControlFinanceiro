@@ -80,7 +80,7 @@ CREATE TABLE `password_resets` (
 6. **Configuração no Hostinger**
 
 - Coloque todos os arquivos e pastas do projeto dentro da pasta `public_html` do seu domínio.
-- Garanta que `.htaccess` esteja no mesmo nível de `index.php`.
+- Garanta que `.htaccess` esteja no mesmo nível do front controller (`index.php`).
 - No Hostinger, configure o `.env` com as credenciais do banco de dados e SMTP para `controlefinanceiro.gmwebdigital.com`.
 - Se você estiver usando o gerenciador de arquivos do Hostinger, crie `.env` manualmente a partir de `.env.example`.
 
@@ -111,7 +111,7 @@ ControlFinanceiro/
 │   └── web.php
 ├── includes/           # Includes compartilhados
 │   └── proteger.php
-├── index.php           # Router principal
+├── index.php           # Front controller / dispatcher principal
 ├── router.php          # Lógica de roteamento
 ├── composer.json       # Dependências
 └── .env               # Variáveis de ambiente

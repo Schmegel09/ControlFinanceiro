@@ -1,5 +1,10 @@
 <?php
 
+/*
+Legenda (logout.php):
+- Limpa sessão e redireciona para `/login`.
+*/
+
 session_start();
 
 // Remove todas as variáveis de sessão
@@ -18,5 +23,5 @@ if (ini_get("session.use_cookies")) {
 session_destroy();
 
 // Redireciona para a página de login
-header('Location: index.php?page=login');
+header('Location: /login');
 exit;

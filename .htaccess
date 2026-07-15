@@ -1,11 +1,17 @@
-# Redireciona todas as requisições não correspondentes a arquivos ou diretórios para index.php
 RewriteEngine On
-RewriteBase /
 
-# Não aplicar rewrite se o arquivo ou diretório existir
+# Redireciona a raiz do site para /login
+RewriteRule ^$ /login [R=302,L]
+
+# Evita redirecionar arquivos e pastas existentes
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /index.php [L,QSA]
 
-# Evita listagem de diretórios
-Options -Indexes
+# Redireciona chamadas de API para api.php
+RewriteRule ^api/(.*)$ api.php?path=$1 [QSA,L]
+
+# Envia /login, /dashboard, /contas etc. para index.php (mapeamento de rotas)
+# Legenda:
+# - URLs do tipo `/rota` serão reescritas internamente para `index.php?page=rota`.
+# - Para adicionar novas rotas, atualize `routes/web.php` com o par `rota => arquivo`.
+RewriteRule ^([a-zA-Z0-9_-]+)/?$ index.php?page=$1 [QSA,L]

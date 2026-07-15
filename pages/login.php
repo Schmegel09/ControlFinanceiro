@@ -2,10 +2,16 @@
 
 declare(strict_types=1);
 
+/*
+Legenda (login.php):
+- Esta página é carregada via o dispatcher/front controller quando a rota `/login` é acessada.
+- Para alterar o endpoint de envio do formulário, edite a `action` do form (atualmente `/login`).
+*/
+
 session_start();
 
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: index.php?page=dashboard');
+    header('Location: /dashboard');
     exit;
 }
 
@@ -42,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario_id'] = $usuario['id'];
             $_SESSION['usuario_nome'] = $usuario['nome'];
 
-            header('Location: index.php?page=dashboard');
+            header('Location: /dashboard');
             exit;
         }
 
@@ -85,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <form method="post" action="index.php?page=login">
+        <form method="post" action="/login">
             <div class="form-group">
                 <label for="email">E-mail</label>
                 <input type="email" id="email" name="email" required autofocus>
@@ -100,10 +106,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
         <p>
-            <a href="index.php?page=recuperar-senha">Esqueci minha senha</a>
+            <a href="/recuperar-senha">Esqueci minha senha</a>
         </p>
         <p>
-            Não tem conta? <a href="index.php?page=cadastro">Criar uma</a>
+            Não tem conta? <a href="/cadastro">Criar uma</a>
         </p>
     </div>
 </body>

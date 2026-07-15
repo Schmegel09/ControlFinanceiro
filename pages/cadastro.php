@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+Legenda (cadastro.php):
+- Carregada por `/cadastro` via o dispatcher/front controller e `routes/web.php`.
+- Formulário envia POST para `/cadastro` — validado e inserido via prepared statements.
+- Para alterar campos ou validações, modifique este arquivo e mantenha as queries preparadas para evitar SQL injection.
+*/
+
 require_once dirname(__DIR__) . '/config/conexao.php';
 
 $mensagem = '';
@@ -42,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':senha' => $senhaHash,
             ]);
 
-            header('Location: index.php?page=login&cadastro=sucesso');
+            header('Location: /login?cadastro=sucesso');
             exit;
         }
     }
@@ -83,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <form method="post" action="index.php?page=cadastro">
+        <form method="post" action="/cadastro">
             <div class="form-group">
                 <label for="nome">Nome</label>
                 <input type="text" id="nome" name="nome" required autofocus>
@@ -103,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
         <p>
-            Já tem uma conta? <a href="index.php?page=login">Faça login</a>
+            Já tem uma conta? <a href="/login">Faça login</a>
         </p>
     </div>
 </body>

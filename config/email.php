@@ -59,6 +59,8 @@ function enviarEmail(string $para, string $assunto, string $mensagem): bool
             $mail->SMTPDebug = 0;
             $mail->Debugoutput = 'echo';
 
+            $mail->CharSet = 'UTF-8';
+            $mail->Encoding = 'base64';
             $mail->setFrom($from, $name);
             $mail->addAddress($para);
             $mail->Subject = $assunto;
@@ -79,6 +81,9 @@ function enviarEmail(string $para, string $assunto, string $mensagem): bool
     // Fallback nativo
     $headers = 'From: ' . $name . ' <' . $from . "\r\n";
     $headers .= 'Reply-To: ' . $from . "\r\n";
+    $headers .= 'MIME-Version: 1.0' . "\r\n";
+    $headers .= 'Content-Type: text/plain; charset=UTF-8' . "\r\n";
+    $headers .= 'Content-Transfer-Encoding: 8bit' . "\r\n";
     $headers .= 'X-Mailer: PHP/' . phpversion();
     return mail($para, $assunto, $mensagem, $headers);
 }
