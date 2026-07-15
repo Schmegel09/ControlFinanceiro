@@ -129,8 +129,12 @@ $stmtCategorias = $pdo->prepare('SELECT id, nome, tipo FROM categorias WHERE usu
 $stmtCategorias->execute([':usuario_id' => $usuarioId]);
 $categorias = $stmtCategorias->fetchAll();
 
-$categoriasReceita = array_filter($categorias, fn($c) => $c['tipo'] === 'receita');
-$categoriasDespesa = array_filter($categorias, fn($c) => $c['tipo'] === 'despesa');
+$categoriasReceita = array_filter($categorias, function ($c) {
+    return $c['tipo'] === 'receita';
+});
+$categoriasDespesa = array_filter($categorias, function ($c) {
+    return $c['tipo'] === 'despesa';
+});
 
 $stmtTotais = $pdo->prepare(
     'SELECT SUM(CASE WHEN tipo = "receita" THEN valor ELSE 0 END) AS total_receitas,

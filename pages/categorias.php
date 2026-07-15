@@ -87,8 +87,12 @@ $categorias = $pdo->prepare(
 $categorias->execute([':usuario_id' => $usuarioId]);
 $categoriasList = $categorias->fetchAll();
 
-$categoriasReceita = array_filter($categoriasList, fn($c) => $c['tipo'] === 'receita');
-$categoriasDespesa = array_filter($categoriasList, fn($c) => $c['tipo'] === 'despesa');
+$categoriasReceita = array_filter($categoriasList, function ($c) {
+    return $c['tipo'] === 'receita';
+});
+$categoriasDespesa = array_filter($categoriasList, function ($c) {
+    return $c['tipo'] === 'despesa';
+});
 
 ?>
 

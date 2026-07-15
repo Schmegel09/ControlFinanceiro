@@ -68,7 +68,9 @@ $categoriasOrdenadas = $categorias;
 arsort($categoriasOrdenadas);
 $categoriasOrdenadas = array_slice($categoriasOrdenadas, 0, 8, true);
 
-$totalCategorias = array_map(fn(array $val) => $val['receita'] - $val['despesa'], $categoriasOrdenadas);
+$totalCategorias = array_map(function (array $val) {
+    return $val['receita'] - $val['despesa'];
+}, $categoriasOrdenadas);
 
 ?>
 
@@ -149,7 +151,9 @@ $totalCategorias = array_map(fn(array $val) => $val['receita'] - $val['despesa']
                     <p>Nenhuma transação encontrada no período selecionado.</p>
                 <?php else: ?>
                     <?php
-                    $maxValor = max(array_map(fn($val) => abs($val['receita']) + abs($val['despesa']), $categoriasOrdenadas));
+                    $maxValor = max(array_map(function ($val) {
+                        return abs($val['receita']) + abs($val['despesa']);
+                    }, $categoriasOrdenadas));
                     $maxValor = max($maxValor, 1);
                     ?>
                     <?php foreach ($categoriasOrdenadas as $categoria => $dados): ?>

@@ -179,14 +179,16 @@ $ultimasTransacoes = $pdo->prepare(
 $ultimasTransacoes->execute($parametros);
 $transacoes = $ultimasTransacoes->fetchAll();
 
-$stmtCategorias = $pdo->prepare('SELECT id, nome FROM categorias WHERE usuario_id = :usuario_id ORDER BY tipo, nome');
+$stmtCategorias = $pdo->prepare('SELECT id, nome, tipo FROM categorias WHERE usuario_id = :usuario_id ORDER BY tipo, nome');
 $stmtCategorias->execute([':usuario_id' => $usuarioId]);
 $categorias = $stmtCategorias->fetchAll();
 
-$categoriasReceita = array_filter($categorias, fn($c) => (
-    $pdo->prepare('SELECT tipo FROM categorias WHERE id = :id')->execute([':id' => $c['id']]) &&
-    $pdo->prepare('SELECT tipo FROM categorias WHERE id = :id')->fetch()['tipo'] === 'receita'
-));
+$categoriasReceita = array_filter($categorias, function ($c) {
+    return $c['tipo'] === 'receita';
+});
+$categoriasDespesa = array_filter($categorias, function ($c) {
+    return $c['tipo'] === 'despesa';
+});
 ?>
 
 <!DOCTYPE html>
