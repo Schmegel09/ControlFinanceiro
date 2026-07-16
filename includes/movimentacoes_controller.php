@@ -46,6 +46,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $resultado = editarTransacao($pdo, $usuarioId, $_POST);
     } elseif ($acao === 'deletar') {
         $resultado = excluirTransacao($pdo, $usuarioId, $_POST['id'] ?? null);
+    } elseif ($acao === 'deletar_todas') {
+        $resultado = excluirTodasTransacoes($pdo, $usuarioId);
     } else {
         $resultado = ['sucesso' => false, 'mensagem' => 'Ação de movimentação inválida.'];
     }
@@ -127,6 +129,16 @@ $totalReceitas = (float) ($totais['total_receitas'] ?? 0);
 $totalDespesas = (float) ($totais['total_despesas'] ?? 0);
 $saldo = $totalReceitas - $totalDespesas;
 
-$jsonFlags = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP;
+$stmtTotalTransacoesUsuario = $pdo->prepare(
+    'SELECT COUNT(*) FROM transacoes WHERE usuario_id = :usuario_id'
+);
+$stmtTotalTransacoesUsuario->execute([':usuario_id' => $usuarioId]);
+$totalTransacoesUsuario = (int) $stmtTotalTransacoesUsuario->fetchColumn();
+
+$jsonFlags = JSON_HEX_TAG
+    | JSON_HEX_APOS
+    | JSON_HEX_QUOT
+    | JSON_HEX_AMP
+    | JSON_INVALID_UTF8_SUBSTITUTE;
 $categoriasJson = json_encode($categorias, $jsonFlags) ?: '[]';
 $transacoesJson = json_encode($transacoes, $jsonFlags) ?: '[]';
