@@ -2,18 +2,23 @@
 
 declare(strict_types=1);
 
-session_start();
+define('APP_INIT', true);
+
+require_once __DIR__ . '/app/Core/auth.php';
+
+iniciarSessaoSegura();
+enviarCabecalhosSeguranca();
 
 /*
 Legenda de alterações:
-- 2026-07-14: Adicionada constante `APP_INIT` para proteger includes.
+- A constante `APP_INIT` protege os arquivos internos de execução direta.
 - Rotas "pretty" ativadas: URLs como `/login` são reescritas para `index.php?page=login` via `.htaccess`.
-- Mapa de rotas está em `routes/web.php` — edite esse arquivo para adicionar/alterar páginas.
+- Mapa de rotas está em `routes/web.php` e aponta para controladores em `app/Controllers`.
 
 O que alterar se precisar modificar comportamento:
-- Arquivos de rota: `routes/web.php` (mapeamento `rota => arquivo`).
+- Arquivos de rota: `routes/web.php` (mapeamento `rota => controller`).
 - Reescrita de URL: `.htaccess` (regra RewriteRule);
-- Proteção de includes: `includes/proteger.php` (verifica `APP_INIT`).
+- Proteção do código interno: `app/Core/proteger.php` (verifica `APP_INIT`).
 */
 $rotas = require __DIR__ . '/routes/web.php';
 
@@ -30,7 +35,7 @@ $pagina = basename($pagina, '.php');
 
 if (!isset($rotas[$pagina])) {
     http_response_code(404);
-    require __DIR__ . '/pages/404.php';
+    require __DIR__ . '/app/Views/errors/404.php';
     exit;
 }
 
@@ -38,10 +43,36 @@ $rota = $rotas[$pagina];
 
 if (
     $rota['protegida'] === true
-    && !isset($_SESSION['usuario_id'])
+    && !usuarioAutenticado()
 ) {
-    header('Location: /login');
-    exit;
+    exigirAutenticacao();
 }
 
-require __DIR__ . '/' . $rota['arquivo'];
+if ($rota['protegida'] === true) {
+    renovarSessaoSeNecessario();
+    enviarCabecalhosSeguranca(true);
+
+    if ($pagina !== 'logout') {
+        require_once __DIR__ . '/config/conexao.php';
+        require_once __DIR__ . '/app/Services/TransacaoService.php';
+        require_once __DIR__ . '/app/Services/CarteiraService.php';
+
+        garantirEstruturaTransacoes($pdo);
+        $contextoCarteira = prepararContextoCarteira($pdo, (int) $_SESSION['usuario_id']);
+        $carteiraAtual = $contextoCarteira['carteira'];
+        $carteiraId = (int) $carteiraAtual['id'];
+        $carteirasDisponiveis = $contextoCarteira['carteiras'];
+        $membrosCarteiraAtual = $contextoCarteira['membros'];
+        $csrfTokenCarteiras = tokenCsrfCarteiras();
+        $uriAtual = is_string($_SERVER['REQUEST_URI'] ?? null) ? $_SERVER['REQUEST_URI'] : '/dashboard';
+        $urlRetornoCarteira = str_starts_with($uriAtual, '/') && !str_starts_with($uriAtual, '//')
+            ? $uriAtual
+            : '/dashboard';
+    }
+}
+
+if (($rota['somente_visitante'] ?? false) === true) {
+    redirecionarSeAutenticado();
+}
+
+require __DIR__ . '/' . $rota['controller'];

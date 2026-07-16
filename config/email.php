@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . '/app/Core/proteger.php';
+
 // Carrega as variáveis de ambiente (assume que config/conexao.php já chamou o dotenv)
 $smtpHost = getenv('SMTP_HOST') ?: ($_ENV['SMTP_HOST'] ?? '');
 $smtpPort = getenv('SMTP_PORT') ?: ($_ENV['SMTP_PORT'] ?? '');

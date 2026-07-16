@@ -1,4 +1,14 @@
 RewriteEngine On
+Options -Indexes
+
+# Impede acesso HTTP direto a código interno e dependências.
+RewriteRule ^(?:app|config|includes|pages|routes|vendor)(?:/|$) - [F,L,NC]
+RewriteRule ^router\.php$ - [F,L,NC]
+
+# Protege arquivos de configuração e metadados do projeto.
+<FilesMatch "^(?:\.env(?:\..*)?|composer\.(?:json|lock))$">
+    Require all denied
+</FilesMatch>
 
 # Redireciona a raiz do site para /login
 RewriteRule ^$ /login [R=302,L]

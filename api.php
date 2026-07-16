@@ -2,53 +2,29 @@
 
 declare(strict_types=1);
 
-session_start();
+define('APP_INIT', true);
 
-require_once __DIR__ . '/config/conexao.php';
+require_once __DIR__ . '/app/Core/auth.php';
 
-if (!isset($_SESSION['usuario_id'])) {
+iniciarSessaoSegura();
+enviarCabecalhosSeguranca(true);
+
+if (!usuarioAutenticado()) {
     http_response_code(401);
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['erro' => 'Não autenticado']);
     exit;
 }
 
-header('Content-Type: application/json; charset=utf-8');
+renovarSessaoSeNecessario();
 
-$path = $_GET['path'] ?? '';
-$metodo = $_SERVER['REQUEST_METHOD'];
-$usuarioId = (int) $_SESSION['usuario_id'];
+require_once __DIR__ . '/config/conexao.php';
+require_once __DIR__ . '/app/Services/TransacaoService.php';
+require_once __DIR__ . '/app/Services/CarteiraService.php';
 
-$partes = explode('/', trim($path, '/'));
+garantirEstruturaTransacoes($pdo);
+$contextoCarteira = prepararContextoCarteira($pdo, (int) $_SESSION['usuario_id']);
+$carteiraAtual = $contextoCarteira['carteira'];
+$carteiraId = (int) $carteiraAtual['id'];
 
-if (count($partes) < 2) {
-    http_response_code(400);
-    echo json_encode(['erro' => 'Requisição inválida']);
-    exit;
-}
-
-$recurso = $partes[0];
-$acao = $partes[1];
-
-if ($recurso === 'transacao' && is_numeric($acao) && $metodo === 'GET') {
-    $id = (int) $acao;
-
-    $stmt = $pdo->prepare(
-        'SELECT id, tipo, descricao, valor, data, categoria_id, numero_parcela, total_parcelas
-         FROM transacoes
-         WHERE id = :id AND usuario_id = :usuario_id'
-    );
-    $stmt->execute([':id' => $id, ':usuario_id' => $usuarioId]);
-    $transacao = $stmt->fetch();
-
-    if (!$transacao) {
-        http_response_code(404);
-        echo json_encode(['erro' => 'Transação não encontrada']);
-        exit;
-    }
-
-    echo json_encode($transacao);
-    exit;
-}
-
-http_response_code(404);
-echo json_encode(['erro' => 'Recurso não encontrado']);
+require __DIR__ . '/app/Controllers/ApiController.php';

@@ -1,48 +1,57 @@
 <?php
 
 declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/app/Core/proteger.php';
 /*
 Legenda de `routes/web.php`:
-- Aqui você define as rotas amigáveis e o arquivo correspondente.
-- Formato: 'rota' => ['arquivo' => 'pages/exemplo.php', 'protegida' => true|false]
-- Para adicionar uma nova página `/minha-rota`, crie `pages/minha_rota.php` e adicione a chave 'minha-rota' mapeando para o arquivo.
+- Aqui você define as rotas amigáveis e o controlador correspondente.
+- Formato: 'rota' => ['controller' => 'app/Controllers/ExemploController.php', ...]
+- O controlador prepara os dados e carrega uma view de `app/Views`.
 
 Exemplo:
-    'relatorios' => [ 'arquivo' => 'pages/relatorios.php', 'protegida' => true ],
+    'relatorios' => [ 'controller' => 'app/Controllers/RelatoriosController.php', 'protegida' => true ],
 
 */
 
 return [
     'login' => [
-        'arquivo' => 'pages/login.php',
+        'controller' => 'app/Controllers/LoginController.php',
         'protegida' => false,
+        'somente_visitante' => true,
     ],
     'cadastro' => [
-        'arquivo' => 'pages/cadastro.php',
+        'controller' => 'app/Controllers/CadastroController.php',
         'protegida' => false,
+        'somente_visitante' => true,
     ],
     'recuperar-senha' => [
-        'arquivo' => 'pages/recuperar_senha.php',
+        'controller' => 'app/Controllers/RecuperarSenhaController.php',
         'protegida' => false,
+        'somente_visitante' => true,
     ],
     'dashboard' => [
-        'arquivo' => 'pages/dashboard.php',
+        'controller' => 'app/Controllers/DashboardController.php',
         'protegida' => true,
     ],
     'relatorios' => [
-        'arquivo' => 'pages/relatorios.php',
+        'controller' => 'app/Controllers/RelatoriosController.php',
         'protegida' => true,
     ],
     'logout' => [
-        'arquivo' => 'pages/logout.php',
+        'controller' => 'app/Controllers/LogoutController.php',
         'protegida' => true,
     ],
     'categorias' => [
-        'arquivo' => 'pages/categorias.php',
+        'controller' => 'app/Controllers/CategoriasController.php',
         'protegida' => true,
     ],
     'movimentacoes' => [
-        'arquivo' => 'pages/movimentacoes.php',
+        'controller' => 'app/Controllers/MovimentacoesController.php',
+        'protegida' => true,
+    ],
+    'carteiras' => [
+        'controller' => 'app/Controllers/CarteirasController.php',
         'protegida' => true,
     ],
 ];

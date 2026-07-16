@@ -9,6 +9,10 @@ Sistema web de controle financeiro desenvolvido em PHP puro com autenticação s
 - ✅ **E-mail com PHPMailer** - Envio seguro via SMTP (Hostinger)
 - ✅ **Interface moderna** - Design responsivo com gradientes e transições
 - ✅ **Proteção de rotas** - Páginas protegidas com sessão de usuário
+- ✅ **Importação CSV** - Movimentações em arquivos separados por `;` ou `,`
+- ✅ **Carteiras pessoal e do casal** - Dados privados separados de uma carteira compartilhada por duas pessoas
+- ✅ **Presença compartilhada** - Indica quando a outra pessoa está usando a carteira do casal
+- ✅ **Gráficos no Dashboard** - Evolução financeira e distribuição de despesas por categoria
 - ✅ **Escalável** - Estrutura modular com routing customizado
 
 ## 📋 Pré-requisitos
@@ -86,7 +90,7 @@ CREATE TABLE `password_resets` (
 
 7. **Inicie o servidor localmente**
 ```bash
-php -S localhost:8000
+php -S localhost:8000 router.php
 ```
 
 7. **Acesse no navegador**
@@ -98,24 +102,46 @@ http://localhost:8000
 
 ```
 ControlFinanceiro/
-├── pages/              # Páginas da aplicação
-│   ├── login.php
-│   ├── cadastro.php
-│   ├── dashboard.php
-│   ├── recuperar_senha.php
-│   └── logout.php
+├── assets/
+│   └── css/                # Estilos externos globais, componentes e páginas
+├── app/
+│   ├── Controllers/        # Fluxo das requisições e respostas
+│   ├── Models/             # Consultas e persistência no banco
+│   ├── Services/           # Regras de negócio financeiras
+│   ├── Core/               # Sessão, autenticação e proteção interna
+│   └── Views/              # HTML e componentes visuais
 ├── config/             # Configurações
 │   ├── conexao.php     # Conexão com banco de dados
 │   └── email.php       # Configuração de e-mail
 ├── routes/             # Definição de rotas
 │   └── web.php
-├── includes/           # Includes compartilhados
-│   └── proteger.php
 ├── index.php           # Front controller / dispatcher principal
-├── router.php          # Lógica de roteamento
+├── api.php             # Front controller da API
+├── router.php          # Roteador do servidor PHP local
 ├── composer.json       # Dependências
 └── .env               # Variáveis de ambiente
 ```
+
+### Fluxo MVC
+
+1. `index.php` resolve a URL usando `routes/web.php`.
+2. A rota carrega um arquivo de `app/Controllers`.
+3. O controlador valida a entrada e chama `Models` ou `Services`.
+4. O controlador entrega os dados para uma view em `app/Views`.
+
+As views não acessam o banco, não processam formulários e não fazem redirecionamentos.
+Os estilos também ficam fora das views: `assets/css/base.css` concentra regras
+globais, `assets/css/components.css` reúne componentes reutilizáveis e
+`assets/css/pages/` mantém somente as regras específicas de cada tela.
+
+No primeiro acesso autenticado, o sistema cria automaticamente a carteira pessoal
+e associa a ela as categorias e movimentações antigas do usuário. Pela rota
+`/carteiras`, uma pessoa pode criar uma carteira do casal e adicionar uma segunda
+conta já cadastrada pelo e-mail. Cada integrante continua com sua carteira pessoal
+privada e ambos passam a acessar somente os dados inseridos na carteira compartilhada.
+
+O logout não precisa de uma view: a rota `/logout` aponta para
+`app/Controllers/LogoutController.php`, que encerra a sessão e redireciona para `/login`.
 
 ## 🔑 Fluxo de Recuperação de Senha
 
@@ -123,7 +149,24 @@ ControlFinanceiro/
 2. **Etapa 2**: Usuário valida o código recebido
 3. **Etapa 3**: Usuário define nova senha e confirma
 
-Tudo acontece em uma única página (`recuperar_senha.php`) com transições suave entre etapas.
+Tudo acontece na rota `/recuperar-senha`, coordenada pelo `RecuperarSenhaController`.
+
+## 📄 Importação CSV
+
+A aba Movimentações aceita arquivos `.csv` e `.txt` com até 5 MB e 1.000 linhas.
+O separador é identificado automaticamente e pode ser ponto e vírgula ou vírgula.
+O botão **Baixar modelo CSV** gera um arquivo com cabeçalho e linhas de exemplo
+compatíveis com Excel; substitua os exemplos pelos lançamentos reais antes de importar.
+
+```csv
+data;tipo;valor;categoria;descricao;parcelas
+16/07/2026;despesa;1.234,56;Mercado;Compra do mês;1
+17/07/2026;receita;2.000,00;Salário;Pagamento;1
+```
+
+As colunas `data` e `valor` são obrigatórias. Quando `tipo` não estiver presente,
+valores negativos são despesas e valores positivos são receitas. Categorias ausentes
+são criadas automaticamente.
 
 ## 🔐 Segurança
 
@@ -131,7 +174,7 @@ Tudo acontece em uma única página (`recuperar_senha.php`) com transições sua
 - Códigos de recuperação com expiração de 15 minutos
 - Prepared statements para prevenir SQL injection
 - CSRF protection com validação de sessão
-- Desabilitar verificação rigorosa de certificado SSL (para auto-assinados como Hostinger)
+- Arquivos internos de `app`, `config`, `routes` e `vendor` bloqueados pelo `.htaccess`
 
 ## 📧 E-mail
 
@@ -155,11 +198,15 @@ Interface moderna com:
 | Rota | Proteção | Descrição |
 |------|----------|-----------|
 | `/` | Não | Redireciona para login |
-| `?page=login` | Não | Página de login |
-| `?page=cadastro` | Não | Página de registro |
-| `?page=recuperar-senha` | Não | Recuperação de senha (3 etapas) |
-| `?page=dashboard` | Sim | Dashboard do usuário |
-| `?page=logout` | Sim | Logout e limpeza de sessão |
+| `/login` | Não | Página de login |
+| `/cadastro` | Não | Página de registro |
+| `/recuperar-senha` | Não | Recuperação de senha (3 etapas) |
+| `/dashboard` | Sim | Dashboard do usuário |
+| `/movimentacoes` | Sim | CRUD de movimentações |
+| `/categorias` | Sim | CRUD de categorias |
+| `/relatorios` | Sim | Relatórios por período |
+| `/carteiras` | Sim | Seleção e compartilhamento de carteiras |
+| `/logout` | Sim | Logout e limpeza de sessão |
 
 ## 🐛 Troubleshooting
 
@@ -198,4 +245,4 @@ Gabriel Moreira - [GitHub](https://github.com/Schmegel09)
 
 ---
 
-**Última atualização**: 13 de julho de 2026
+**Última atualização**: 16 de julho de 2026

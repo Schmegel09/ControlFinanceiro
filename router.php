@@ -2,6 +2,16 @@
 
 if (php_sapi_name() === 'cli-server') {
     $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+    if ($url === '/api.php' || str_starts_with($url, '/api/')) {
+        if (str_starts_with($url, '/api/')) {
+            $_GET['path'] = substr($url, strlen('/api/'));
+        }
+
+        require __DIR__ . '/api.php';
+        return true;
+    }
+
     $file = __DIR__ . $url;
 
     // Se for um arquivo que existe (css, js, imagens, etc), servir direto
