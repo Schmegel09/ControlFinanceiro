@@ -43,10 +43,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 
     if (!tokenCsrfTransacoesValido($_POST['csrf_token'] ?? null)) {
         $resultado = ['sucesso' => false, 'mensagem' => 'Sua sessão expirou. Atualize a página e tente novamente.'];
-    } elseif ($acao === 'adicionar_transacao') {
-        $resultado = criarTransacao($pdo, $usuarioId, $_POST);
     } elseif ($acao === 'editar') {
         $resultado = editarTransacao($pdo, $usuarioId, $_POST);
+    } elseif ($acao === 'deletar') {
+        $resultado = excluirTransacao($pdo, $usuarioId, $_POST['id'] ?? null);
     } else {
         $resultado = ['sucesso' => false, 'mensagem' => 'Ação de movimentação inválida.'];
     }

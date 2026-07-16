@@ -13,6 +13,7 @@ if (!isset($edicaoAction, $csrfToken, $transacoesJson, $categoriasJson)) {
     role="dialog"
     aria-modal="true"
     aria-labelledby="tx-edit-title"
+    aria-describedby="tx-installment-note"
     aria-hidden="true"
 >
     <div class="tx-modal-content">

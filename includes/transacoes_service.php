@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+const MAX_PARCELAS_TRANSACAO = 120;
+
 /**
  * Mantém a estrutura usada pelo dashboard e pela página de movimentações alinhada.
  */
@@ -169,6 +171,11 @@ function criarTransacao(PDO $pdo, int $usuarioId, array $dados): array
         return ['sucesso' => false, 'mensagem' => 'Selecione se a movimentação é uma receita ou despesa.'];
     }
 
+    // Receitas são sempre registradas em um único lançamento.
+    if ($tipo === 'receita') {
+        $parcelas = 1;
+    }
+
     if ($valor === null) {
         return ['sucesso' => false, 'mensagem' => 'Informe um valor válido maior que zero, com no máximo duas casas decimais.'];
     }
@@ -177,8 +184,11 @@ function criarTransacao(PDO $pdo, int $usuarioId, array $dados): array
         return ['sucesso' => false, 'mensagem' => 'Informe uma data válida.'];
     }
 
-    if ($parcelas < 1 || $parcelas > 12) {
-        return ['sucesso' => false, 'mensagem' => 'O número de parcelas deve estar entre 1 e 12.'];
+    if ($parcelas < 1 || $parcelas > MAX_PARCELAS_TRANSACAO) {
+        return [
+            'sucesso' => false,
+            'mensagem' => 'O número de parcelas deve estar entre 1 e ' . MAX_PARCELAS_TRANSACAO . '.',
+        ];
     }
 
     if (tamanhoTextoTransacao($descricao) > 255) {
@@ -380,6 +390,38 @@ function excluirTransacao(PDO $pdo, int $usuarioId, mixed $idInformado): array
     }
 
     return ['sucesso' => true, 'mensagem' => 'Movimentação excluída com sucesso.'];
+}
+
+/**
+ * Exclui todas as movimentações do usuário, sem afetar categorias ou dados de outros usuários.
+ *
+ * @return array{sucesso: bool, mensagem: string}
+ */
+function excluirTodasTransacoes(PDO $pdo, int $usuarioId): array
+{
+    if ($usuarioId <= 0) {
+        return ['sucesso' => false, 'mensagem' => 'Usuário inválido.'];
+    }
+
+    try {
+        $stmt = $pdo->prepare('DELETE FROM transacoes WHERE usuario_id = :usuario_id');
+        $stmt->execute([':usuario_id' => $usuarioId]);
+        $totalExcluido = $stmt->rowCount();
+    } catch (Throwable $erro) {
+        error_log($erro->getMessage());
+
+        return ['sucesso' => false, 'mensagem' => 'Não foi possível excluir todos os lançamentos. Tente novamente.'];
+    }
+
+    if ($totalExcluido === 0) {
+        return ['sucesso' => false, 'mensagem' => 'Nenhum lançamento foi encontrado para exclusão.'];
+    }
+
+    $mensagem = $totalExcluido === 1
+        ? '1 lançamento foi excluído com sucesso.'
+        : "{$totalExcluido} lançamentos foram excluídos com sucesso.";
+
+    return ['sucesso' => true, 'mensagem' => $mensagem];
 }
 
 /**
