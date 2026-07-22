@@ -26,66 +26,129 @@ defined('SMTP_FROM_NAME') || define('SMTP_FROM_NAME', $fromName);
  * Variáveis esperadas no .env:
  * SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, SMTP_FROM_EMAIL, SMTP_FROM_NAME
  */
-function enviarEmail(string $para, string $assunto, string $mensagem): bool
-{
-    // usa as constantes definidas acima
-    $host = SMTP_HOST;
-    $port = SMTP_PORT;
-    $user = SMTP_USERNAME;
-    $pass = SMTP_PASSWORD;
-    $from = SMTP_FROM_EMAIL;
-    $name = SMTP_FROM_NAME;
+function enviarEmail(
+    string $para,
+    string $assunto,
+    string $mensagem,
+    bool $html = false
+): bool {
+    $host = trim((string) SMTP_HOST);
+    $port = (int) SMTP_PORT;
+    $user = trim((string) SMTP_USERNAME);
+    $pass = (string) SMTP_PASSWORD;
+    $from = trim((string) SMTP_FROM_EMAIL);
+    $name = trim((string) SMTP_FROM_NAME);
 
-    // Se PHPMailer estiver instalado, usar SMTP autenticado
-    if (class_exists('PHPMailer\\PHPMailer\\PHPMailer')) {
+    if (!filter_var($para, FILTER_VALIDATE_EMAIL)) {
+        error_log('Tentativa de envio para endereço inválido: ' . $para);
+        return false;
+    }
+
+    if (!filter_var($from, FILTER_VALIDATE_EMAIL)) {
+        error_log('SMTP_FROM_EMAIL inválido: ' . $from);
+        return false;
+    }
+
+    if (class_exists(\PHPMailer\PHPMailer\PHPMailer::class)) {
         try {
             $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+
             $mail->isSMTP();
-            $mail->Host = $host ?: 'localhost';
-            $mail->SMTPAuth = ($user !== '' && $pass !== '');
+            $mail->Host = $host !== '' ? $host : 'localhost';
+            $mail->SMTPAuth = $user !== '' && $pass !== '';
+
             if ($mail->SMTPAuth) {
                 $mail->Username = $user;
                 $mail->Password = $pass;
             }
-            $mail->Port = $port ?: 587;
-            $mail->SMTPSecure = ($mail->Port == 465) ? 'ssl' : 'tls';
-            // Desabilita verificação rigorosa de certificado (Hostinger pode ter certificados auto-assinados)
-            $mail->SMTPOptions = array(
-                'ssl' => array(
+
+            $mail->Port = $port > 0 ? $port : 587;
+
+            if ($mail->Port === 465) {
+                $mail->SMTPSecure =
+                    \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+            } else {
+                $mail->SMTPSecure =
+                    \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            }
+
+            /*
+             * Preferencialmente mantenha a validação de certificado habilitada.
+             * Só use estas opções se o servidor realmente apresentar erro
+             * de certificado.
+             */
+            $mail->SMTPOptions = [
+                'ssl' => [
                     'verify_peer' => false,
                     'verify_peer_name' => false,
-                    'allow_self_signed' => true
-                )
-            );
-            // Depuração desativada em produção (alterar para 2 se necessário diagnosticar)
-            $mail->SMTPDebug = 0;
-            $mail->Debugoutput = 'echo';
+                    'allow_self_signed' => true,
+                ],
+            ];
 
+            $mail->SMTPDebug = 0;
             $mail->CharSet = 'UTF-8';
             $mail->Encoding = 'base64';
+
             $mail->setFrom($from, $name);
             $mail->addAddress($para);
-            $mail->Subject = $assunto;
-            $mail->Body = $mensagem;
-            $mail->AltBody = strip_tags($mensagem);
 
-            $sent = $mail->send();
-            if (!$sent) {
-                error_log('PHPMailer send returned false for recipient: ' . $para);
+            $mail->Subject = $assunto;
+
+            if ($html) {
+                $mail->isHTML(true);
+                $mail->Body = $mensagem;
+                $mail->AltBody = html_entity_decode(
+                    strip_tags(
+                        str_replace(
+                            ['<br>', '<br/>', '<br />'],
+                            "\n",
+                            $mensagem
+                        )
+                    ),
+                    ENT_QUOTES,
+                    'UTF-8'
+                );
+            } else {
+                $mail->isHTML(false);
+                $mail->Body = $mensagem;
+                $mail->AltBody = $mensagem;
             }
-            return $sent;
-        } catch (\Exception $e) {
-            error_log('PHPMailer exception (' . $host . ':' . $port . '): ' . $e->getMessage());
+
+            return $mail->send();
+        } catch (\Throwable $erro) {
+            error_log(
+                'Erro ao enviar e-mail via PHPMailer para '
+                    . $para
+                    . ': '
+                    . $erro->getMessage()
+            );
+
             return false;
         }
     }
 
-    // Fallback nativo
-    $headers = 'From: ' . $name . ' <' . $from . "\r\n";
+    $headers = 'From: '
+        . $name
+        . ' <'
+        . $from
+        . ">\r\n";
+
     $headers .= 'Reply-To: ' . $from . "\r\n";
-    $headers .= 'MIME-Version: 1.0' . "\r\n";
-    $headers .= 'Content-Type: text/plain; charset=UTF-8' . "\r\n";
-    $headers .= 'Content-Transfer-Encoding: 8bit' . "\r\n";
+    $headers .= "MIME-Version: 1.0\r\n";
+
+    if ($html) {
+        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+    } else {
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+    }
+
+    $headers .= "Content-Transfer-Encoding: 8bit\r\n";
     $headers .= 'X-Mailer: PHP/' . phpversion();
-    return mail($para, $assunto, $mensagem, $headers);
+
+    return mail(
+        $para,
+        $assunto,
+        $mensagem,
+        $headers
+    );
 }

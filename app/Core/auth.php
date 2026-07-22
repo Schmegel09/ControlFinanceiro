@@ -61,15 +61,52 @@ function renovarSessaoSeNecessario(): void
     $_SESSION['ultima_atividade'] = $agora;
 }
 
-function autenticarUsuario(int $usuarioId, string $usuarioNome): void
+function autenticarUsuario(
+    int $usuarioId,
+    string $usuarioNome,
+    string $usuarioEmail,
+    string $papelSistema = 'usuario'
+): void
 {
     session_regenerate_id(true);
 
     $_SESSION['usuario_id'] = $usuarioId;
     $_SESSION['usuario_nome'] = $usuarioNome;
+    $_SESSION['usuario_email'] = strtolower(trim($usuarioEmail));
+    $_SESSION['papel_sistema'] = $papelSistema === 'superadmin' ? 'superadmin' : 'usuario';
     $_SESSION['autenticado_em'] = time();
     $_SESSION['sessao_renovada_em'] = time();
     $_SESSION['ultima_atividade'] = time();
+}
+
+/**
+ * @return array<int, string>
+ */
+function emailsSuperAdminConfigurados(): array
+{
+    $configurados = (string) ($_ENV['SUPERADMIN_EMAILS'] ?? getenv('SUPERADMIN_EMAILS') ?: '');
+    if ($configurados === '') {
+        $configurados = (string) ($_ENV['SUPERADMIN_EMAIL'] ?? getenv('SUPERADMIN_EMAIL') ?: '');
+    }
+
+    return array_values(array_unique(array_filter(array_map(
+        static fn (string $item): string => strtolower(trim($item)),
+        preg_split('/[,;]/', $configurados) ?: []
+    ))));
+}
+
+function usuarioSuperAdmin(): bool
+{
+    if (($_SESSION['papel_sistema'] ?? '') === 'superadmin') {
+        return true;
+    }
+
+    $email = strtolower(trim((string) ($_SESSION['usuario_email'] ?? '')));
+    if ($email === '') {
+        return false;
+    }
+
+    return in_array($email, emailsSuperAdminConfigurados(), true);
 }
 
 function guardarDestinoAposLogin(): void
@@ -81,7 +118,7 @@ function guardarDestinoAposLogin(): void
     $uri = is_string($_SERVER['REQUEST_URI'] ?? null) ? $_SERVER['REQUEST_URI'] : '';
     $caminhoExtraido = parse_url($uri, PHP_URL_PATH);
     $caminho = is_string($caminhoExtraido) ? $caminhoExtraido : '';
-    $destinosIgnorados = ['/login', '/logout', '/cadastro', '/recuperar-senha'];
+    $destinosIgnorados = ['/login', '/logout', '/cadastro', '/recuperar-senha', '/verificar-email'];
 
     if (
         $uri !== ''
@@ -116,6 +153,8 @@ function exigirAutenticacao(): void
     unset(
         $_SESSION['usuario_id'],
         $_SESSION['usuario_nome'],
+        $_SESSION['usuario_email'],
+        $_SESSION['papel_sistema'],
         $_SESSION['autenticado_em'],
         $_SESSION['sessao_renovada_em'],
         $_SESSION['ultima_atividade']

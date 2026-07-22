@@ -62,6 +62,12 @@ if (!isset(
         <h1>Bem-vindo, <?= htmlspecialchars($_SESSION['usuario_nome'] ?? 'Usuário', ENT_QUOTES, 'UTF-8') ?></h1>
         <p class="subtitle">Acompanhe seu saldo e seus últimos lançamentos. Novas receitas e despesas são registradas na aba Movimentações.</p>
 
+        <?php if (($avisoAssinatura ?? '') !== ''): ?>
+            <div class="msg aviso-assinatura" role="status">
+                <?= htmlspecialchars($avisoAssinatura, ENT_QUOTES, 'UTF-8') ?>
+            </div>
+        <?php endif; ?>
+
         <?php require dirname(__DIR__) . '/partials/carteira_switcher.php'; ?>
 
         <?php if ($mensagem !== ''): ?>
@@ -72,9 +78,18 @@ if (!isset(
 
         <div class="actions dashboard-toolbar">
             <nav class="dashboard-nav" aria-label="Navegação principal">
-                <a href="/movimentacoes" class="button">Movimentações</a>
-                <a href="/categorias" class="button">Categorias</a>
-                <a href="/relatorios" class="button">Relatórios</a>
+                <?php if (telaClientePermitida($permissoesCliente ?? [], 'movimentacoes')): ?>
+                    <a href="/movimentacoes" class="button">Movimentações</a>
+                <?php endif; ?>
+                <?php if (telaClientePermitida($permissoesCliente ?? [], 'categorias')): ?>
+                    <a href="/categorias" class="button">Categorias</a>
+                <?php endif; ?>
+                <?php if (telaClientePermitida($permissoesCliente ?? [], 'relatorios')): ?>
+                    <a href="/relatorios" class="button">Relatórios</a>
+                <?php endif; ?>
+                <?php if (usuarioSuperAdmin()): ?>
+                    <a href="/admin-clientes" class="button admin-btn">Administrar clientes</a>
+                <?php endif; ?>
                 <a href="/logout" class="button logout-btn">Sair</a>
             </nav>
             <form method="get" action="/dashboard" class="period-filter">
@@ -182,7 +197,9 @@ if (!isset(
                 <h2 id="ultimos-lancamentos-titulo">Últimos lançamentos</h2>
                 <?php if (count($transacoes) === 0): ?>
                     <p>Nenhuma transação registrada ainda. Acesse Movimentações para fazer seu primeiro lançamento.</p>
-                    <a href="/movimentacoes" class="button empty-action">Registrar movimentação</a>
+                    <?php if (telaClientePermitida($permissoesCliente ?? [], 'movimentacoes')): ?>
+                        <a href="/movimentacoes" class="button empty-action">Registrar movimentação</a>
+                    <?php endif; ?>
                 <?php else: ?>
                     <table class="transactions-table <?= $exibirAutorMovimentacao ? 'with-author' : '' ?>" role="table">
                         <caption class="sr-only">Dez lançamentos mais recentes no período selecionado</caption>

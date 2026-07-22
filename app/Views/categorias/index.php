@@ -24,8 +24,12 @@ require_once dirname(__DIR__, 2) . '/Core/proteger.php';
 
         <div class="top-row">
             <nav class="actions" aria-label="Navegação principal">
-                <a href="/dashboard" class="button">Dashboard</a>
-                <a href="/movimentacoes" class="button">Movimentações</a>
+                <?php if (telaClientePermitida($permissoesCliente ?? [], 'dashboard')): ?>
+                    <a href="/dashboard" class="button">Dashboard</a>
+                <?php endif; ?>
+                <?php if (telaClientePermitida($permissoesCliente ?? [], 'movimentacoes')): ?>
+                    <a href="/movimentacoes" class="button">Movimentações</a>
+                <?php endif; ?>
                 <a href="/logout" class="button logout-btn">Sair</a>
             </nav>
         </div>

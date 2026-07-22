@@ -30,13 +30,20 @@ return [
         'protegida' => false,
         'somente_visitante' => true,
     ],
+    'verificar-email' => [
+        'controller' => 'app/Controllers/VerificarEmailController.php',
+        'protegida' => false,
+        'somente_visitante' => true,
+    ],
     'dashboard' => [
         'controller' => 'app/Controllers/DashboardController.php',
         'protegida' => true,
+        'tela_cliente' => 'dashboard',
     ],
     'relatorios' => [
         'controller' => 'app/Controllers/RelatoriosController.php',
         'protegida' => true,
+        'tela_cliente' => 'relatorios',
     ],
     'logout' => [
         'controller' => 'app/Controllers/LogoutController.php',
@@ -45,13 +52,25 @@ return [
     'categorias' => [
         'controller' => 'app/Controllers/CategoriasController.php',
         'protegida' => true,
+        'tela_cliente' => 'categorias',
     ],
     'movimentacoes' => [
         'controller' => 'app/Controllers/MovimentacoesController.php',
         'protegida' => true,
+        'tela_cliente' => 'movimentacoes',
     ],
     'carteiras' => [
         'controller' => 'app/Controllers/CarteirasController.php',
         'protegida' => true,
+        'tela_cliente' => 'carteiras',
+    ],
+    'assinatura-bloqueada' => [
+        'controller' => 'app/Controllers/AssinaturaBloqueadaController.php',
+        'protegida' => true,
+    ],
+    'admin-clientes' => [
+        'controller' => 'app/Controllers/AdminClientesController.php',
+        'protegida' => true,
+        'somente_superadmin' => true,
     ],
 ];

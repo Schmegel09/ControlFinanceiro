@@ -7,7 +7,9 @@ require_once dirname(__DIR__, 2) . '/config/conexao.php';
 require_once dirname(__DIR__, 2) . '/config/email.php';
 require_once dirname(__DIR__) . '/Models/UsuarioModel.php';
 require_once dirname(__DIR__) . '/Models/PasswordResetModel.php';
+require_once dirname(__DIR__) . '/Services/SaasService.php';
 
+garantirEstruturaSaas($pdo);
 garantirEstruturaRecuperacaoSenha($pdo);
 
 if (($_GET['reiniciar'] ?? '') === '1') {

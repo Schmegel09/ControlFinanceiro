@@ -1,0 +1,155 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea, #643983);
+    color: #293047;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.access-card {
+    width: min(540px, 100%);
+    padding: clamp(28px, 6vw, 44px);
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 24px 65px rgba(28, 24, 61, .28);
+    text-align: center;
+}
+
+.access-card h1 {
+    margin: 18px 0 12px;
+    color: #252c43;
+    font-size: clamp(26px, 6vw, 34px);
+}
+
+.access-card p {
+    margin: 0;
+    color: #626a7d;
+    line-height: 1.65;
+}
+
+.access-code {
+    display: block;
+    color: #4f5fc9;
+    font-size: 54px;
+    font-weight: 900;
+}
+
+.status-pill {
+    display: inline-flex;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.status-pendente {
+    background: #e9e9ff;
+    color: #494ca0;
+}
+
+.status-em_atraso {
+    background: #fff0c9;
+    color: #805a00;
+}
+
+.status-bloqueado,
+.status-cancelado {
+    background: #ffe1e1;
+    color: #872a34;
+}
+
+.access-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 26px 0;
+    text-align: left;
+}
+
+.access-details div {
+    padding: 14px;
+    border-radius: 11px;
+    background: #f3f5fb;
+}
+
+.access-details dt {
+    color: #777f92;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.access-details dd {
+    margin: 5px 0 0;
+    color: #2f3750;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.access-card .access-help {
+    margin-top: 24px;
+    font-size: 14px;
+}
+
+.access-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 26px;
+}
+
+.access-actions a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 17px;
+    border-radius: 9px;
+    background: #4f5fc9;
+    color: white;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.access-actions a.secondary {
+    background: #edf0f7;
+    color: #39425a;
+}
+
+.access-actions.screen-links {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 0;
+    }
+
+    .access-card {
+        min-height: 100vh;
+        min-height: 100dvh;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .access-details {
+        grid-template-columns: 1fr;
+    }
+
+    .access-actions {
+        flex-direction: column;
+    }
+}

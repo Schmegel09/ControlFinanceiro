@@ -23,6 +23,7 @@ $outrosOnline = array_values(array_filter(
 
 
 <section class="wallet-bar" aria-label="Carteira em uso">
+    <?php if (telaClientePermitida($permissoesCliente ?? [], 'carteiras')): ?>
     <form method="post" action="/carteiras" class="wallet-switch-form">
         <input type="hidden" name="acao" value="selecionar">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfTokenCarteiras, ENT_QUOTES, 'UTF-8') ?>">
@@ -42,6 +43,12 @@ $outrosOnline = array_values(array_filter(
         <button type="submit" class="wallet-switch-submit">Trocar</button>
         <a href="/carteiras" class="wallet-manage-link">Gerenciar</a>
     </form>
+    <?php else: ?>
+        <div class="wallet-switch-field">
+            <label>Carteira em uso</label>
+            <strong><?= htmlspecialchars((string) $carteiraAtual['nome'], ENT_QUOTES, 'UTF-8') ?></strong>
+        </div>
+    <?php endif; ?>
 
     <div class="wallet-meta" id="wallet-presence" data-current-user="<?= (int) ($_SESSION['usuario_id'] ?? 0) ?>">
         <?php if ($outrosOnline !== []): ?>

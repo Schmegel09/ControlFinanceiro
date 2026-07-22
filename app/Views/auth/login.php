@@ -19,7 +19,7 @@ require_once dirname(__DIR__, 2) . '/Core/proteger.php';
         <h1>Controle Financeiro</h1>
 
         <?php if ($mensagem !== ''): ?>
-            <?php $loginComSucesso = strpos($mensagem, 'sucesso') !== false; ?>
+            <?php $loginComSucesso = strpos($mensagem, 'sucesso') !== false || strpos($mensagem, 'Cadastro realizado') !== false; ?>
             <div class="msg <?= $loginComSucesso ? 'sucesso' : '' ?>" role="<?= $loginComSucesso ? 'status' : 'alert' ?>">
                 <?= htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8') ?>
             </div>
@@ -42,6 +42,11 @@ require_once dirname(__DIR__, 2) . '/Core/proteger.php';
         <p>
             <a href="/recuperar-senha">Esqueci minha senha</a>
         </p>
+        <?php if ($exibirReenvioConfirmacao ?? false): ?>
+            <p>
+                <a href="/verificar-email">Reenviar confirmação de e-mail</a>
+            </p>
+        <?php endif; ?>
         <p>
             Não tem conta? <a href="/cadastro">Criar uma</a>
         </p>

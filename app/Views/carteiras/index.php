@@ -20,10 +20,18 @@ require_once dirname(__DIR__, 2) . '/Core/proteger.php';
         <p class="subtitle">Mantenha seus dados pessoais separados e compartilhe somente a carteira do casal.</p>
 
         <nav class="nav" aria-label="Navegação principal">
-            <a href="/dashboard" class="button">Dashboard</a>
-            <a href="/movimentacoes" class="button">Movimentações</a>
-            <a href="/categorias" class="button">Categorias</a>
-            <a href="/relatorios" class="button">Relatórios</a>
+            <?php if (telaClientePermitida($permissoesCliente ?? [], 'dashboard')): ?>
+                <a href="/dashboard" class="button">Dashboard</a>
+            <?php endif; ?>
+            <?php if (telaClientePermitida($permissoesCliente ?? [], 'movimentacoes')): ?>
+                <a href="/movimentacoes" class="button">Movimentações</a>
+            <?php endif; ?>
+            <?php if (telaClientePermitida($permissoesCliente ?? [], 'categorias')): ?>
+                <a href="/categorias" class="button">Categorias</a>
+            <?php endif; ?>
+            <?php if (telaClientePermitida($permissoesCliente ?? [], 'relatorios')): ?>
+                <a href="/relatorios" class="button">Relatórios</a>
+            <?php endif; ?>
             <a href="/logout" class="button">Sair</a>
         </nav>
 

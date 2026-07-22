@@ -52,8 +52,55 @@ if ($rota['protegida'] === true) {
     renovarSessaoSeNecessario();
     enviarCabecalhosSeguranca(true);
 
-    if ($pagina !== 'logout') {
-        require_once __DIR__ . '/config/conexao.php';
+    require_once __DIR__ . '/config/conexao.php';
+    require_once __DIR__ . '/app/Services/SaasService.php';
+
+    garantirEstruturaSaas($pdo);
+    $superAdmin = usuarioSuperAdminAtual($pdo, (int) $_SESSION['usuario_id']);
+
+    if (($rota['somente_superadmin'] ?? false) === true && !$superAdmin) {
+        http_response_code(403);
+        require __DIR__ . '/app/Views/errors/403.php';
+        exit;
+    }
+
+    $acessoCliente = $superAdmin
+        ? [
+            'permitido' => true,
+            'status_efetivo' => 'ativo',
+            'mensagem' => '',
+            'cliente' => buscarClienteDoUsuario($pdo, (int) $_SESSION['usuario_id']) ?: null,
+        ]
+        : avaliarAcessoCliente($pdo, (int) $_SESSION['usuario_id']);
+
+    $rotasPermitidasSemAssinatura = ['assinatura-bloqueada', 'logout'];
+
+    if (!$acessoCliente['permitido'] && !in_array($pagina, $rotasPermitidasSemAssinatura, true)) {
+        header('Location: /assinatura-bloqueada', true, 302);
+        exit;
+    }
+
+    if ($acessoCliente['permitido'] && $pagina === 'assinatura-bloqueada') {
+        header('Location: /dashboard', true, 302);
+        exit;
+    }
+
+    $permissoesCliente = $superAdmin
+        ? array_fill_keys(array_keys(TELAS_CLIENTE), true)
+        : obterPermissoesUsuario($pdo, (int) $_SESSION['usuario_id']);
+    $telaDaRota = is_string($rota['tela_cliente'] ?? null) ? $rota['tela_cliente'] : null;
+
+    if (
+        !$superAdmin
+        && $telaDaRota !== null
+        && !telaClientePermitida($permissoesCliente, $telaDaRota)
+    ) {
+        http_response_code(403);
+        require __DIR__ . '/app/Views/errors/permissao.php';
+        exit;
+    }
+
+    if (!in_array($pagina, ['logout', 'assinatura-bloqueada', 'admin-clientes'], true)) {
         require_once __DIR__ . '/app/Services/TransacaoService.php';
         require_once __DIR__ . '/app/Services/CarteiraService.php';
 
@@ -68,6 +115,9 @@ if ($rota['protegida'] === true) {
         $urlRetornoCarteira = str_starts_with($uriAtual, '/') && !str_starts_with($uriAtual, '//')
             ? $uriAtual
             : '/dashboard';
+        $avisoAssinatura = $acessoCliente['status_efetivo'] === 'em_atraso'
+            ? $acessoCliente['mensagem']
+            : '';
     }
 }
 

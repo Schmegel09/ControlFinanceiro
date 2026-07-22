@@ -24,8 +24,12 @@ require_once dirname(__DIR__, 2) . '/Core/proteger.php';
 
         <div class="top-row">
             <nav class="actions" aria-label="Navegação principal">
-                <a href="/dashboard" class="button">Dashboard</a>
-                <a href="/categorias" class="button">Categorias</a>
+                <?php if (telaClientePermitida($permissoesCliente ?? [], 'dashboard')): ?>
+                    <a href="/dashboard" class="button">Dashboard</a>
+                <?php endif; ?>
+                <?php if (telaClientePermitida($permissoesCliente ?? [], 'categorias')): ?>
+                    <a href="/categorias" class="button">Categorias</a>
+                <?php endif; ?>
                 <a href="/logout" class="button">Sair</a>
             </nav>
         </div>
@@ -65,7 +69,12 @@ require_once dirname(__DIR__, 2) . '/Core/proteger.php';
                                 ><?= htmlspecialchars($categoria['nome'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <small id="nova-categoria-ajuda" class="field-help">As categorias são filtradas conforme o tipo selecionado. <a href="/categorias">Gerenciar categorias</a></small>
+                        <small id="nova-categoria-ajuda" class="field-help">
+                            As categorias são filtradas conforme o tipo selecionado.
+                            <?php if (telaClientePermitida($permissoesCliente ?? [], 'categorias')): ?>
+                                <a href="/categorias">Gerenciar categorias</a>
+                            <?php endif; ?>
+                        </small>
                     </div>
 
                     <div class="form-group">

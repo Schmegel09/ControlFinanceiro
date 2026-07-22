@@ -50,6 +50,9 @@ DB_NAME=seu_banco
 DB_USER=seu_user
 DB_PASSWORD=sua_senha
 
+# URL pública usada nos links de confirmação
+APP_URL=https://controlefinanceiro.seudominio.com
+
 # SMTP
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=587
@@ -57,6 +60,9 @@ SMTP_USERNAME=seu_email@seu_dominio.com
 SMTP_PASSWORD=sua_senha_smtp
 SMTP_FROM_EMAIL=seu_email@seu_dominio.com
 SMTP_FROM_NAME="Controle Financeiro"
+
+# Administração SaaS (separe múltiplos e-mails por vírgula)
+SUPERADMIN_EMAILS=seu_email@seu_dominio.com
 ```
 
 5. **Crie o banco de dados**
@@ -140,6 +146,36 @@ e associa a ela as categorias e movimentações antigas do usuário. Pela rota
 conta já cadastrada pelo e-mail. Cada integrante continua com sua carteira pessoal
 privada e ambos passam a acessar somente os dados inseridos na carteira compartilhada.
 
+### Controle SaaS e bloqueio de clientes
+
+A variável `SUPERADMIN_EMAILS` define quais contas podem acessar `/admin-clientes`.
+O painel permite associar um domínio ao cliente, configurar vencimento e tolerância,
+aprovar cadastros, renovar assinaturas e alterar o status entre `pendente`, `ativo`,
+`em_atraso`, `bloqueado` e `cancelado`.
+
+O mesmo painel permite promover usuários cadastrados à função de superadministrador
+ou remover essa função. O cadastro público nunca recebe essa permissão. A conta atual
+não pode remover a própria função, e contas listadas em `SUPERADMIN_EMAILS` ficam
+protegidas como acesso de emergência. Mudanças de função são registradas em
+`superadmin_auditoria` e passam a valer na requisição seguinte.
+
+Cada cliente também possui permissões independentes para Dashboard, Movimentações,
+Categorias, Relatórios e Carteiras. O superadministrador escolhe as telas no formulário
+do cliente. A regra é aplicada no menu, no acesso direto pela URL e nas chamadas da API.
+Clientes que já existiam quando a estrutura foi criada mantêm todas as telas liberadas;
+novos cadastros começam sem telas até que o administrador defina o acesso.
+
+Os cartões de clientes oferecem ações rápidas para liberar, marcar atraso, bloquear ou
+cancelar uma assinatura sem salvar o formulário completo. Essas ações também geram
+registros em `cliente_auditoria`.
+
+Usuários existentes são migrados automaticamente como ativos e com e-mail confirmado.
+Novos cadastros recebem um link com validade de 24 horas e ficam pendentes até a
+confirmação do e-mail e a aprovação do superadministrador. Depois do vencimento, o cliente
+permanece com acesso durante a tolerância configurada; ao final dela, páginas e API
+são bloqueadas sem exclusão dos dados. Todas as alterações administrativas ficam
+registradas em `cliente_auditoria`.
+
 O logout não precisa de uma view: a rota `/logout` aponta para
 `app/Controllers/LogoutController.php`, que encerra a sessão e redireciona para `/login`.
 
@@ -201,11 +237,14 @@ Interface moderna com:
 | `/login` | Não | Página de login |
 | `/cadastro` | Não | Página de registro |
 | `/recuperar-senha` | Não | Recuperação de senha (3 etapas) |
+| `/verificar-email` | Não | Confirmação e reenvio do link de e-mail |
 | `/dashboard` | Sim | Dashboard do usuário |
 | `/movimentacoes` | Sim | CRUD de movimentações |
 | `/categorias` | Sim | CRUD de categorias |
 | `/relatorios` | Sim | Relatórios por período |
 | `/carteiras` | Sim | Seleção e compartilhamento de carteiras |
+| `/assinatura-bloqueada` | Sim | Situação da assinatura sem acesso aos dados |
+| `/admin-clientes` | Superadmin | Aprovação, renovação e bloqueio de clientes |
 | `/logout` | Sim | Logout e limpeza de sessão |
 
 ## 🐛 Troubleshooting
